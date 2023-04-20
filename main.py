@@ -2,18 +2,19 @@ import os
 import openai
 import GPTlib as f
 
+
 def completion():
 
     openai.api_key = os.getenv("OPENAI_API_KEY")
 
-    filename = '../comments/messages.txt'
+    filename = '../GPT/messages.txt'
 
     prompt = f.extract_last_prompt_and_answer(filename)
 
     response = openai.Completion.create(
       model="text-davinci-003",
       prompt=prompt,
-      temperature=0.45,
+      temperature=1,
       max_tokens=3900,
       top_p=1,
       frequency_penalty=0,
