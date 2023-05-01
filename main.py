@@ -10,12 +10,13 @@ def completion():
     filename = '../GPT/messages.txt'
 
     prompt = f.extract_last_prompt_and_answer(filename)
+    
 
     response = openai.Completion.create(
       model="text-davinci-003",
       prompt=prompt,
       temperature=1,
-      max_tokens=3900,
+      max_tokens=4000,
       top_p=1,
       frequency_penalty=0,
       presence_penalty=0

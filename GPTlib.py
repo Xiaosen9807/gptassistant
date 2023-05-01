@@ -20,8 +20,9 @@ def extract_last_prompt_and_answer(filename):
                 lines[len(lines) - i - 1] = line.replace('prompt:', '')
                 
                 break
-        print(f"prompt to work on:{''.join(lines[len(lines) - i - 1:len(lines) - ia - 1])}")
-        return ''.join(lines[len(lines) - i - 1:len(lines) - ia - 1])
+        prompt = ''.join(lines[len(lines) - i - 1:len(lines) - ia - 1])
+        print(f"prompt to work on:{prompt}")
+        return prompt
     
 def add_response_to_file(filename, response):
     with open(filename, 'a', encoding='utf-8') as file_obj:
