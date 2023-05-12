@@ -28,7 +28,9 @@ def extract_last_prompt_and_answer(filename):
     
 def add_response_to_file(filename, response):
     with open(filename, 'a', encoding='utf-8') as file_obj:
-        file_obj.write(f"\nanswer:\n{response.choices[0].text.strip()}\ntokens used: {response.usage.total_tokens}\n")
+        answer = response.choices[0].text.strip()
+        file_obj.write(f"\nanswer:\n{answer}\ntokens used: {response.usage.total_tokens}\n")
+        print(answer)
 
 def completion(prompt):
 
@@ -38,7 +40,7 @@ def completion(prompt):
     response = openai.Completion.create(
       model="text-davinci-003",
       prompt=prompt,
-      temperature=0.8,
+      temperature=0.1,
       max_tokens=3000,
       top_p=1,
       frequency_penalty=0,
