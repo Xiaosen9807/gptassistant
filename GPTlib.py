@@ -25,6 +25,26 @@ def extract_last_prompt_and_answer(filename):
         prompt = ''.join(lines[len(lines) - i - 1:len(lines) - ia - 1])
         print(f"prompt to work on:{prompt}")
         return prompt
+
+def get_QA_lists(prompt):
+    A_list = []
+    Q_list = []
+    cursor = ''
+    lines = prompt.split('\n')
+    for line in lines:
+        if line.startswith('Q:'):
+            Q_list.append(line.replace('Q:', ''))
+            cursor = 'Q'
+        elif line.startswith('A:'):
+            A_list.append(line.replace('A:', ''))
+            cursor = 'A'
+        elif cursor=='A':
+            A_list[-1] += '\n' + line
+        elif cursor=='Q':
+            Q_list[-1] += '\n' + line
+    
+    return Q_list, A_list
+    
     
 def add_response_to_file(filename, response):
     with open(filename, 'a', encoding='utf-8') as file_obj:
