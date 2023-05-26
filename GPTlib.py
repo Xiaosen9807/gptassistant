@@ -48,26 +48,44 @@ def get_QA_lists(prompt):
     
 def add_response_to_file(filename, response):
     with open(filename, 'a', encoding='utf-8') as file_obj:
-        answer = response.choices[0].text.strip()
-        file_obj.write(f"\nanswer:\n{answer}\ntokens used: {response.usage.total_tokens}\n")
-        print(answer)
+        file_obj.write(f"\nanswer:\n{response[0]}\ntokens used: {response[1]}\n")
+        print(response[0])
 
 def completion(prompt):
 
     openai.api_key = os.getenv("OPENAI_API_KEY")
     
-
-    response = openai.Completion.create(
-      model="text-davinci-003",
-      prompt=prompt,
-      temperature=0.1,
-      max_tokens=3000,
-      top_p=1,
-      frequency_penalty=0,
-      presence_penalty=0
-    )
+    Q, A = get_QA_lists(prompt)
+        
+    if len(Q)==0:
+        print('no chat detected')
+        
+        response = openai.Completion.create(
+          model="text-davinci-003",
+          prompt=prompt,
+          temperature=0.1,
+          max_tokens=3000,
+          top_p=1,
+          frequency_penalty=0,
+          presence_penalty=0
+        )
+        
+        return [response.choices[0].text.strip(), response.usage.total_tokens]
     
-    return response
+    else:
+        R = [None]*(len(Q)+len(A))
+        roles = [None]*(len(Q)+len(A))
+        R[0::2] = Q
+        R[1::2] = A
+        roles[0::2] = ['user' for i in range(len(Q))]
+        roles[1::2] = ['assistant'  for i in range(len(A))]
+        
+        response = openai.ChatCompletion.create(
+        model='gpt-3.5-turbo',
+        messages=[{'role': role, 'content': content} for role, content in zip(roles, R)],
+        temperature=0,
+        )
+        return ['A: ' + response.choices[0].message.content.strip(), response.usage.total_tokens]
 
 def get_words(text, start, end):
     start_idx = text.find(start)

@@ -25,13 +25,6 @@ def completion(filename = args.filename_completion):
 
     prompt = f.extract_last_prompt_and_answer(filename)
     
-    Q, A = f.get_QA_lists(prompt)
-    
-    if len(Q)==0:
-        print('no chat detected')
-    else:
-        print(Q)
-        print(A)
     response = f.completion(prompt)
     
     f.add_response_to_file(filename, response)
