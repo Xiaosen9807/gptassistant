@@ -24,30 +24,32 @@ parser.add_argument("-fw", "--filename_word",
                     help = "Filename of a word document")
 
 parser.add_argument("-s", "--server",
-                    default = 'ollama',
+                    # default = 'ollama',
+                    default = 'openai',
                     help = "The server name where the request is sent to. The default is 'ollama', meaning it is sent to a local server. Other option is 'openai'.")
 
 # Parse the command-line arguments
 args = parser.parse_args()
 
-def word(filename_promtps = args.filename_completion, filename_word = args.filename_word, filename_system = args.filename_system):
+def word(filename_prompts = args.filename_completion, filename_word = args.filename_word, filename_system = args.filename_system):
     
     prompt = f.extract_word_text(filename_word)
-    print(prompt)
+    print("prompt: ", prompt)
     system = f.read_txt_file(filename_system)
-    print(system)
+    print("system: ", system)
     response = f.client_completion_stream(prompt, system)
-    f.add_response_to_file(filename_promtps, response)
+    f.add_response_to_file(filename_prompts, response)
     
     
 
-def completion(filename_promtps = args.filename_completion, 
+def completion(filename_prompts = args.filename_completion, 
                filename_system = args.filename_system, 
                server = args.server):
 
-    prompt = f.extract_last_prompt_and_answer(filename_promtps)
-    system = f.read_txt_file(filename_system)
+    prompt = f.extract_last_prompt_and_answer(filename_prompts)
     
+    system = f.read_txt_file(filename_system)
+
     if server == 'ollama':
         response = f.client_completion_stream(prompt, system)
     elif server == 'openai':
@@ -56,7 +58,7 @@ def completion(filename_promtps = args.filename_completion,
         response = f'\n ERROR: the selected server {server} is not existing among the posible choices'
         print(response)
     
-    f.add_response_to_file(filename_promtps, response)
+    f.add_response_to_file(filename_prompts, response)
 
 def highlight(filename = args.filename):
     

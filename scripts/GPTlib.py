@@ -1,4 +1,5 @@
-import fitz, openai, os, sys, requests, json, time
+# import fitz,
+import openai, os, sys, requests, json, time
 import base64
 from openai import OpenAI
 from docx import Document
@@ -8,6 +9,7 @@ from docx.table import _Cell, Table
 from docx.oxml.text.paragraph import CT_P
 from docx.oxml.table import CT_Tbl
 import docx
+import re
 
 
 
@@ -116,7 +118,7 @@ def extract_last_prompt_and_answer(filename):
                 
                 break
         prompt = ''.join(lines[len(lines) - i - 1:len(lines) - ia - 1])
-        print(f"prompt to work on:{prompt}")
+        print(f"prompt to work on: {prompt}")
         return prompt
 
 def get_QA_lists(prompt):
@@ -124,6 +126,7 @@ def get_QA_lists(prompt):
     Q_list = []
     cursor = ''
     lines = prompt.split('\n')
+    
     for line in lines:
         if line.startswith('Q:'):
             Q_list.append(line.replace('Q:', ''))
@@ -153,12 +156,15 @@ def completion(prompt, system):
     )
     
     Q, A = get_QA_lists(prompt)
+
         
     if len(Q)==0:
         print('no chat detected')
         
-        response = openai.Completion.create(
-          model="text-davinci-003",
+        # response = openai.Completion.create(
+        response = client.responses.create(
+        #   model="text-davinci-003",
+          model="gpt-4o",
           prompt=prompt,
           temperature=0.1,
           max_tokens=10000,
@@ -177,14 +183,32 @@ def completion(prompt, system):
         roles[0::2] = ['user' for i in range(len(Q))]
         roles[1::2] = ['assistant'  for i in range(len(A))]
         
-        response = client.chat.completions.create(
-        model='gpt-4o',
-        messages = [ {'role': 'system', 'content': system},
-         *[{'role': role, 'content': content} for role, content in zip(roles, R)]],
-        temperature=0,
+        # response = client.chat.completions.create(
+
+        # response = client.responses.create(
+        # model="o3-mini-2025-01-31",
+        # messages = [ {'role': 'system', 'content': system},
+        #  *[{'role': role, 'content': content} for role, content in zip(roles, R)]],
+        # temperature=0,
+        # )
+        model, system_prompt = extract_model_and_prompt(system)
+        
+        response = client.responses.create(
+            model=model,
+            # model="gpt-4o",
+            instructions=system_prompt,
+            input=Q[0],
         )
-        print(response.choices[0].message.content.strip())
-        return ''.join(['A: ' + response.choices[0].message.content.strip(), f', {response.usage.total_tokens}'])
+        
+        
+
+        output_text = response.output_text
+        total_token = response.usage.total_tokens
+        print('Model: ', model)
+        print('System Prompts: ', system_prompt)
+        print("Total token usage: ", total_token)
+        # print(response.choices[0].message.content.strip())
+        return ''.join(['A: ' + output_text, f', {response.usage.total_tokens}'])
         
 
 def client_completion(prompt, system):
@@ -222,7 +246,7 @@ def client_completion(prompt, system):
         *[{'role': role, 'content': content} for role, content in zip(roles, R)]],
         temperature=0,
         )
-        print(response)
+        # print(response)
         return ['A: ' + response.choices[0].message.content.strip() + f'\nmodel used: {model}', response.usage.total_tokens]
         
 def client_completion_stream(prompt, system):
@@ -271,27 +295,27 @@ def get_words(text, start, end):
         return text[start_idx+len(start):end_idx]
     
 
-def pdf_highlight(filename, section_list, checks):
-    section_list = section_list.split(', ')
-    print(section_list)
-    doc = fitz.open(filename)
-    text = ''
-    for page in doc:
-        text += page.get_text().replace('\n', ' ')
+# def pdf_highlight(filename, section_list, checks):
+#     section_list = section_list.split(', ')
+#     print(section_list)
+#     doc = fitz.open(filename)
+#     text = ''
+#     for page in doc:
+#         text += page.get_text().replace('\n', ' ')
         
-    for start_word, end_word in zip(section_list[0:-1], section_list[1:]):
-        section = get_words(text, start_word, end_word)
+#     for start_word, end_word in zip(section_list[0:-1], section_list[1:]):
+#         section = get_words(text, start_word, end_word)
         
-        if section == False:
-            print("No sections found")
-        else:
-            print(f"Section {start_word} \n\n" + section)
-            response = completion("\n" + checks + "\n" + section)
-            print(f"\ncorrections: \n" + response.choices[0].text.strip() + '\n')
+#         if section == False:
+#             print("No sections found")
+#         else:
+#             print(f"Section {start_word} \n\n" + section)
+#             response = completion("\n" + checks + "\n" + section)
+#             print(f"\ncorrections: \n" + response.choices[0].text.strip() + '\n')
             
-            with open(filename[0:-3]+'txt', 'a', encoding='utf-8') as file_obj:
-                file_obj.write(f"Section {start_word} \n\n")
-                file_obj.write(response.choices[0].text.strip() + '\n')
+#             with open(filename[0:-3]+'txt', 'a', encoding='utf-8') as file_obj:
+#                 file_obj.write(f"Section {start_word} \n\n")
+#                 file_obj.write(response.choices[0].text.strip() + '\n')
 
 
 def extract_instructions(filename):
@@ -314,6 +338,18 @@ def extract_instructions(filename):
     print(instructions)
     return filename, section_list, instructions
     
+def extract_model_and_prompt(content):
+        
+    # Extract model
+    model_match = re.search(r'Model:\s*(\S+)', content)
+    model = model_match.group(1) if model_match else None
+    
+    # Extract system prompt
+    prompt_match = re.search(r'System Prompt:\s*(.*)', content, re.DOTALL)
+    system_prompt = prompt_match.group(1).strip() if prompt_match else None
+    
+    return model, system_prompt
+
 def read_txt_file(file_path):
     try:
         with open(file_path, 'r', encoding='utf-8') as file:

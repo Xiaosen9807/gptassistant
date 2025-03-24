@@ -1,0 +1,36 @@
+prompt:Q: What's the expression of Ampère's law, describe only in one equation
+answer:
+
+answer:
+A: Ampère’s law (with Maxwell’s correction) can be expressed in one equation as:
+
+  ∇×B = μ₀J + μ₀ε₀ ∂E/∂t
+
+This compact differential form relates the curl of the magnetic field B to the current density J and the time rate of change of the electric field E., 666 
+
+answer:
+A: \[
+\nabla \times \mathbf{B} = \mu_0 \mathbf{J} + \mu_0 \varepsilon_0 \frac{\partial \mathbf{E}}{\partial t}
+\], 123 
+
+answer:
+A: $$\nabla \times \mathbf{B} = \mu_0\mathbf{J} + \mu_0\epsilon_0\,\frac{\partial \mathbf{E}}{\partial t}.$$, 674 
+
+answer:
+A: \[
+\nabla \times \mathbf{B} = \mu_0 \mathbf{J} + \mu_0 \epsilon_0 \frac{\partial \mathbf{E}}{\partial t}
+\], 122 
+
+answer:
+A: \[
+\nabla \times \mathbf{B} = \mu_0 \mathbf{J} + \mu_0 \varepsilon_0 \frac{\partial \mathbf{E}}{\partial t}
+\], 123 
+
+answer:
+A: Ampère's Law is expressed as:
+
+\[
+\nabla \times \mathbf{B} = \mu_0 (\mathbf{J} + \varepsilon_0 \frac{\partial \mathbf{E}}{\partial t})
+\]
+
+This is the Maxwell-Ampère equation, which includes the displacement current term \(\varepsilon_0 \frac{\partial \mathbf{E}}{\partial t}\)., 149 
